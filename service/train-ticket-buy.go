@@ -70,6 +70,31 @@ func (s *TicketServiceServer) SubmitRequest(ctx context.Context, req *generated.
 	return receipt, nil
 }
 
+func (s *TicketServiceServer) GetDetails(ctx context.Context, req *generated.GetDetailsRequest) (*generated.TicketReceipt, error) {
+	user, exists := s.users[req.Email]
+	if !exists {
+		return nil, fmt.Errorf("user with email %s not found", req.Email)
+	}
+
+	var allocatedSeat string
+	seat, found := s.seats[user.Email]
+	if !found {
+		allocatedSeat = "No seat allocated"
+	} else {
+		allocatedSeat = seat
+	}
+
+	receipt := &generated.TicketReceipt{
+		From:          "",
+		To:            "",
+		User:          &user,
+		PricePaid:     0,
+		AllocatedSeat: allocatedSeat,
+	}
+
+	return receipt, nil
+}
+
 func (s *TicketServiceServer) allocateSeatRandomly() (string, error) {
 	allSeats := generateAllSeats(s.availableSeats)
 

@@ -1,3 +1,3 @@
 {
-  "email": "{{ faker.internet.example_email }}"
+  "email": "halban@gmail.com"
 }
