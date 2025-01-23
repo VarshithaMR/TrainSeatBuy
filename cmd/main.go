@@ -22,7 +22,7 @@ func main() {
 	ticketServiceServer := service.NewTicketServiceServer(&configuration.SeatConfig)
 	generated.RegisterTicketServiceServer(grpcServer, ticketServiceServer)
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", configuration.ServerConfig.Port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", configuration.ServerConfig.Host, configuration.ServerConfig.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %s", err)
 	}

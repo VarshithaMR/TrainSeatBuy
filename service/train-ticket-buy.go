@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 
 	"golang.org/x/net/context"
@@ -13,6 +14,7 @@ import (
 )
 
 type TicketServiceServer struct {
+	mu             sync.Mutex
 	users          map[string]generated.User
 	seats          map[string]string
 	availableSeats map[string]int
@@ -32,21 +34,14 @@ func NewTicketServiceServer(seatConfig *config.SeatConfig) *TicketServiceServer 
 	}
 }
 
-func generateAllSeats(seatConfig map[string]int) []string {
-	var allSeats []string
-	for section, count := range seatConfig {
-		for i := 1; i <= count; i++ {
-			seat := fmt.Sprintf("%s%d", section, i)
-			allSeats = append(allSeats, seat)
-		}
-	}
-	return allSeats
-}
-
 func (s *TicketServiceServer) SubmitRequest(ctx context.Context, req *generated.SubmitTicketRequest) (*generated.TicketReceipt, error) {
 	if ctx == nil {
 		return nil, errors.New("request context is empty")
 	}
+
+	// mutex is used as there can be multiple requests
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	//random seat allocation
 	randomAllocatedSeat, err := s.allocateSeatRandomly()
@@ -199,6 +194,17 @@ func (s *TicketServiceServer) ModifyUserSeat(ctx context.Context, req *generated
 		Success: true,
 		Message: fmt.Sprintf("User %s has been moved to seat %s", req.Email, req.NewSeat),
 	}, nil
+}
+
+func generateAllSeats(seatConfig map[string]int) []string {
+	var allSeats []string
+	for section, count := range seatConfig {
+		for i := 1; i <= count; i++ {
+			seat := fmt.Sprintf("%s%d", section, i)
+			allSeats = append(allSeats, seat)
+		}
+	}
+	return allSeats
 }
 
 func (s *TicketServiceServer) allocateSeatRandomly() (string, error) {
