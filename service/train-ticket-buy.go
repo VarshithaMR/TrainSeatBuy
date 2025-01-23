@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"TrainSeatBuy/cmd/config"
 	"TrainSeatBuy/service/proto/generated"
 )
 
@@ -16,11 +17,7 @@ type TicketServiceServer struct {
 	generated.UnimplementedTicketServiceServer
 }
 
-type SeatConfig struct {
-	Seats map[string]int `yaml:"seats"`
-}
-
-func NewTicketServiceServer(seatConfig *SeatConfig) *TicketServiceServer {
+func NewTicketServiceServer(seatConfig *config.SeatConfig) *TicketServiceServer {
 	return &TicketServiceServer{
 		users:          make(map[string]generated.User),
 		seats:          make(map[string]string),

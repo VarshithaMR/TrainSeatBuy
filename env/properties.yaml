@@ -1,3 +1,6 @@
 seats:
   A: 30
   B: 30
+
+server:
+  port: "localhost:50051"
