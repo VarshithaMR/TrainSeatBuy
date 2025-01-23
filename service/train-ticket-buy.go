@@ -71,6 +71,10 @@ func (s *TicketServiceServer) SubmitRequest(ctx context.Context, req *generated.
 }
 
 func (s *TicketServiceServer) GetDetails(ctx context.Context, req *generated.GetDetailsRequest) (*generated.TicketReceipt, error) {
+	if ctx == nil {
+		return nil, errors.New("request context is empty")
+	}
+
 	user, exists := s.users[req.Email]
 	if !exists {
 		return nil, fmt.Errorf("user with email %s not found", req.Email)
@@ -93,6 +97,32 @@ func (s *TicketServiceServer) GetDetails(ctx context.Context, req *generated.Get
 	}
 
 	return receipt, nil
+}
+
+func (s *TicketServiceServer) GetUsersInSection(ctx context.Context, req *generated.GetUsersInSectionRequest) (*generated.UsersInSection, error) {
+	if ctx == nil {
+		return nil, errors.New("request context is empty")
+	}
+
+	var usersInSection []*generated.UserWithSeat
+
+	for seat, email := range s.seats {
+		if len(seat) > 0 && seat[:1] == req.Section {
+			user, exists := s.users[email]
+			if exists {
+				usersInSection = append(usersInSection, &generated.UserWithSeat{
+					User:          &user,
+					AllocatedSeat: seat,
+				})
+			}
+		}
+	}
+
+	usersInSec := &generated.UsersInSection{
+		Section: req.Section,
+		Users:   usersInSection,
+	}
+	return usersInSec, nil
 }
 
 func (s *TicketServiceServer) allocateSeatRandomly() (string, error) {
