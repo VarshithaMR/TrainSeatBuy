@@ -38,7 +38,6 @@ func LoadConfig(filePath string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file content: %v", err)
 	}
-	fmt.Printf("File content:\n%s\n", string(fileContent))
 
 	// Now decode the content
 	err = yaml.Unmarshal(fileContent, &config)

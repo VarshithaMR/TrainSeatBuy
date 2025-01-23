@@ -159,6 +159,48 @@ func (s *TicketServiceServer) RemoveUser(ctx context.Context, req *generated.Rem
 	}, nil
 }
 
+func (s *TicketServiceServer) ModifyUserSeat(ctx context.Context, req *generated.ModifyUserSeatRequest) (*generated.ModifyUserSeatResponse, error) {
+	if req.Email == "" || req.NewSeat == "" {
+		return nil, fmt.Errorf("invalid email or new seat provided")
+	}
+
+	_, exists := s.users[req.Email]
+	if !exists {
+		return &generated.ModifyUserSeatResponse{
+			Success: false,
+			Message: fmt.Sprintf("User with email %s not found", req.Email),
+		}, nil
+	}
+
+	// Check if the new seat is available
+	_, seatAssigned := s.seats[req.NewSeat]
+	if seatAssigned {
+		return &generated.ModifyUserSeatResponse{
+			Success: false,
+			Message: fmt.Sprintf("Seat %s is already occupied", req.NewSeat),
+		}, nil
+	}
+
+	oldSeat := ""
+	for seat, email := range s.seats {
+		if email == req.Email {
+			oldSeat = seat
+			break
+		}
+	}
+	if oldSeat != "" {
+		delete(s.seats, oldSeat) // Free up the old seat
+	}
+
+	// Assign new seat
+	s.seats[req.NewSeat] = req.Email
+
+	return &generated.ModifyUserSeatResponse{
+		Success: true,
+		Message: fmt.Sprintf("User %s has been moved to seat %s", req.Email, req.NewSeat),
+	}, nil
+}
+
 func (s *TicketServiceServer) allocateSeatRandomly() (string, error) {
 	allSeats := generateAllSeats(s.availableSeats)
 
