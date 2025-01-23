@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -21,15 +22,13 @@ func main() {
 	ticketServiceServer := service.NewTicketServiceServer(&configuration.SeatConfig)
 	generated.RegisterTicketServiceServer(grpcServer, ticketServiceServer)
 
-	listener, err := net.Listen("tcp", configuration.ServerConfig.Port)
+	listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", configuration.ServerConfig.Port))
 	if err != nil {
-		log.Fatalf("Failed to listen on port %s: %v", configuration.ServerConfig.Port, err)
+		log.Fatalf("failed to listen: %s", err)
 	}
 
-	// Start the gRPC server
-	log.Printf("Starting gRPC server on %s", configuration.ServerConfig.Port)
-	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("Failed to start gRPC server: %v", err)
+	if err = grpcServer.Serve(listener); err != nil {
+		log.Fatalf("failed to serve: %s", err)
 	}
 
 }

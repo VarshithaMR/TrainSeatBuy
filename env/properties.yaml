@@ -1,6 +1,9 @@
 seats:
-  A: 30
-  B: 30
+  A:
+    count: 30
+  B:
+    count: 30
 
 server:
-  port: "localhost:50051"
+  host: localhost
+  port: "50051"

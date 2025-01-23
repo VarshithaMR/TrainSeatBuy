@@ -1,0 +1,13 @@
+{
+  "details": {
+    "methodFqn": "ticket.TicketService.ModifyUserSeat"
+  },
+  "requests": [
+    {
+      "location": "ModifyUserSeat-request.json"
+    }
+  ],
+  "operationType": "unary",
+  "invokerName": "grpc",
+  "importStreamId": "691d4de2-cfc6-4e69-89a9-6c2739a03bb6"
+}

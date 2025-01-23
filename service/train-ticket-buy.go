@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"TrainSeatBuy/cmd/config"
 	"TrainSeatBuy/service/proto/generated"
 )
@@ -18,10 +20,15 @@ type TicketServiceServer struct {
 }
 
 func NewTicketServiceServer(seatConfig *config.SeatConfig) *TicketServiceServer {
+	availableSeats := map[string]int{
+		"A": seatConfig.A.Count,
+		"B": seatConfig.B.Count,
+	}
+
 	return &TicketServiceServer{
 		users:          make(map[string]generated.User),
 		seats:          make(map[string]string),
-		availableSeats: seatConfig.Seats,
+		availableSeats: availableSeats,
 	}
 }
 
@@ -36,7 +43,10 @@ func generateAllSeats(seatConfig map[string]int) []string {
 	return allSeats
 }
 
-func (s *TicketServiceServer) SubmitTicket(req *generated.SubmitTicketRequest) (*generated.TicketReceipt, error) {
+func (s *TicketServiceServer) SubmitRequest(ctx context.Context, req *generated.SubmitTicketRequest) (*generated.TicketReceipt, error) {
+	if ctx == nil {
+		return nil, errors.New("request context is empty")
+	}
 
 	//random seat allocation
 	randomAllocatedSeat, err := s.allocateSeatRandomly()
