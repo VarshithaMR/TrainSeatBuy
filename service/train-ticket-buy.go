@@ -125,6 +125,40 @@ func (s *TicketServiceServer) GetUsersInSection(ctx context.Context, req *genera
 	return usersInSec, nil
 }
 
+// RemoveUser removes a user from the system based on their email.
+func (s *TicketServiceServer) RemoveUser(ctx context.Context, req *generated.RemoveUserRequest) (*generated.RemoveUserResponse, error) {
+	if ctx == nil || req.Email == "" {
+		return nil, fmt.Errorf("invalid request")
+	}
+
+	_, exists := s.users[req.Email]
+	if !exists {
+		return &generated.RemoveUserResponse{
+			Success: false,
+			Message: fmt.Sprintf("User with email %s not found", req.Email),
+		}, nil
+	}
+
+	assignedSeat := ""
+	for seat, email := range s.seats {
+		if email == req.Email {
+			assignedSeat = seat
+			break
+		}
+	}
+
+	if assignedSeat != "" {
+		delete(s.seats, assignedSeat)
+	}
+
+	delete(s.users, req.Email)
+
+	return &generated.RemoveUserResponse{
+		Success: true,
+		Message: fmt.Sprintf("User %s removed successfully", req.Email),
+	}, nil
+}
+
 func (s *TicketServiceServer) allocateSeatRandomly() (string, error) {
 	allSeats := generateAllSeats(s.availableSeats)
 
